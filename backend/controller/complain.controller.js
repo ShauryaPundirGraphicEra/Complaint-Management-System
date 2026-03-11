@@ -120,8 +120,8 @@ export const getComplaint = asyncHandler(async (req,res)=>{
     const { complaintId } = req.params;
 
     const complaint = await Complaint.findById(complaintId)
-        .populate("userId","username")
-        .populate("assignedOfficer","username");
+        .populate("userId", "username fullName profilePhotoURL")
+        .populate("assignedOfficer", "username fullName departMent designation profilePhotoURL");
 
     if(!complaint){
         throw new ApiError(404,"Complaint not found");
