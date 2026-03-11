@@ -19,18 +19,19 @@ const users=new Schema({
     password:{type:String,required:true },
     gender:{type:String,enum:["Male","Female","Other","PreferNotToSay"]},
     phoneNumber:{type:String,unique:true},
-    isEmployee: { type:Boolean, required:true,default:false},
-    designation:{type:String,index:true,required:function(){return this.isEmployee}},
+    role: { type:String, enum:["Citizen","Officer","Admin"],required:true,default:"Citizen",index:true},
+    designation:{type:String,index:true,required:function(){return this.role==="Officer"; }},
     departMent: {
             type: String,
             index:true,
             required: function() {
-                return this.isEmployee;
-            },
-            default: "NA"
+                return this.designation && this.role==="Officer";
+            }
         },
-    isVerified:{ type:Boolean,default:false,index:true },
+    isVerified:{ type:Boolean,default:false,index:true }, //this can only be set to true by admin after verifying the officer;s credential
+
     profilePhotoURL:{type:String,default:"https://cdn-icons-png.flaticon.com/512/149/149071.png"},
+    assignedComplaints:[{ type:ObjectId, ref: 'Complaint' ,index:true,required:function(){ return this.role==="Officer"; }}]
 },{ timestamps: true });
 
 

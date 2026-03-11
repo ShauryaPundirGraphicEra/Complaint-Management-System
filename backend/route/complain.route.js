@@ -7,13 +7,13 @@ import { upload } from "../middleware/multer.middleware.js";
 
 const router=express.Router();
 
-router.route("/complaint",authMiddleware,upload.array("images", 5),createComplaint);
-router.route("/support/:complaintId",authMiddleware,supportComplaint);
-router.route("/complaint/:complaintId",authMiddleware,getComplaint);
-router.route("/complaints",authMiddleware,getComplaints);
-router.route("/mycomplaints",authMiddleware,getMyComplaints);
-router.route("/delete/:complaintId",authMiddleware,deleteComplaint);
-router.route("/review/:complaintId",isGovernmentEmployee,reviewComplaint);
+router.post("/complaint",authMiddleware,upload.array("images", 5),createComplaint);
+router.post("/support/:complaintId",authMiddleware,supportComplaint);
+router.get("/complaint/:complaintId",authMiddleware,getComplaint);
+router.get("/complaints",authMiddleware,getComplaints);
+router.get("/mycomplaints",authMiddleware,getMyComplaints);
+router.delete("/delete/:complaintId",authMiddleware,deleteComplaint);
+router.post("/review/:complaintId",isGovernmentEmployee,reviewComplaint);
 
 export default router;
 

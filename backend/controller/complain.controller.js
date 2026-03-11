@@ -4,6 +4,9 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { z } from "zod";
+import { Complaint } from "../model/complain.model.js"; 
+import { predictOfficer } from "../utils/OfficerPrediction.js";
+import { User } from "../model/user.model.js";
 
 
 
@@ -52,6 +55,24 @@ export const createComplaint = asyncHandler(async (req,res)=>{
         location,
         images:imageURLs
     });
+
+
+    // Here we can also implement the logic to automatically assign the complaint to an officer based on the department using the predictDepartment function
+    const recommendedOfficerId= await predictOfficer(complaint);
+    console.log(recommendedOfficerId);  // it will return id of the recommended officer based on the complaint details
+    const assignedOfficer = await User.findOne({ role: "Officer", _id:recommendedOfficerId, isVerified: true });
+
+    if(assignedOfficer){
+        complaint.assignedOfficer = assignedOfficer._id;
+    }
+    
+
+    await complaint.save();
+
+    assignedOfficer.assignedComplaints.push(complaint._id);
+
+    await assignedOfficer.save();
+
 
     res.status(201).json(
         new ApiResponse(201,complaint,"Complaint created successfully")

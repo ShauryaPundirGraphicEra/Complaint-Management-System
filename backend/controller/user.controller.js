@@ -15,7 +15,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export const signup = asyncHandler( async (req,res)=>{
-     const { username,fullName,address,email, password,gender,phoneNumber,isEmployee,designation,departMent,profilePhoto } = req.body;
+     const { username,fullName,address,email, password,gender,phoneNumber,role,designation,departMent,profilePhoto } = req.body;
 
     const inputSchema= z.object({
         username: z.string().min(1,"Username is required").max(30),
@@ -32,7 +32,7 @@ export const signup = asyncHandler( async (req,res)=>{
         password: z.string().min(6,"Password must be at least 6 characters long").max(40),
         gender:z.enum(["Male","Female","Other","PreferNotToSay"]),
         phoneNumber: z.string().min(10,"Phone number must be at least 10 digit").max(10,"At most 10 digit allowed"),
-        isEmployee: z.boolean(),
+        role:z.enum(["Citizen","Officer","Admin"]).optional().default("Citizen"),
         designation: z.string().min(1,"Designation is required").max(100).optional(),
         departMent: z.string().min(1,"Department is required").max(100).optional(),
     });
@@ -44,22 +44,12 @@ export const signup = asyncHandler( async (req,res)=>{
         throw new ApiError(400, "Invalid input data", validatedData.error.flatten());
 }
 
-    // if (!validatedData.success) {
-    //     throw new ApiError(400, "Invalid input data", validatedData.error.flatten());
-    // }
-
-
-    // if(!username || !password || !fullName || !address || !email || !gender || !phoneNumber || isEmployee === undefined || (isEmployee && (!designation || !departMent))){
-    //    // return res.status(400).send("Username and password required");
-    //    return res.json(new ApiError(400,"Given Information was not correct !!"));
-    // }
-
-    //now check if username or email already exist
+    
    
    
     const existingUser= await User.findOne({ $or: [{userName:username},{email:email}]});
     if(existingUser){
-        //return res.status(400).send("Username or email already exists");
+        
         throw new ApiError(400, "Username or email already exists !!");
     }
     
@@ -90,7 +80,7 @@ export const signup = asyncHandler( async (req,res)=>{
         password: hashedPassword,
         gender:gender,
         phoneNumber:phoneNumber,
-        isEmployee:isEmployee,
+        role:role,
         designation:designation,
         departMent:departMent,
         profilePhotoURL:profilePhotoURL
@@ -137,6 +127,15 @@ export const signin = async (req,res)=>{
 
      const userWithoutPassword = user.toObject();
      delete userWithoutPassword.password;
+
+     let JWT_SECRET;
+     if(user.role==="Officer"&& user.isVerified){
+        JWT_SECRET=process.env.JWT_SECRET_OFFICER;
+     }else if(user.role==="Admin"){
+        JWT_SECRET=process.env.JWT_SECRET_ADMIN;
+     }else{
+        JWT_SECRET=process.env.JWT_SECRET;
+     }
 
      const token= jwt.sign({ userId: user._id, userName: user.userName} ,JWT_SECRET,{expiresIn:"240h"});
 
