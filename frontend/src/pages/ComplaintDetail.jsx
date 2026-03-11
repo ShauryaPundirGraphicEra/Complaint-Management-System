@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams,Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/axiosInstance';
 import SkeletonCard from '../components/SkeletonCard';
+import { ShieldCheck, User, MapPin } from 'lucide-react';
 
 export default function ComplaintDetail() {
   const { id } = useParams();
@@ -14,15 +15,15 @@ export default function ComplaintDetail() {
   const { data: complaint, isLoading } = useQuery({
     queryKey: ['complaint', id],
     queryFn: async () => {
-      const res = await api.get(`/complaint/${id}`); // [cite: 106]
+      const res = await api.get(`/complaint/${id}`);
       return res.data.data;
     }
   });
 
-  // Mutation for Officer Review [cite: 43]
+  // Mutation for Officer Review
   const reviewMutation = useMutation({
     mutationFn: async (reviewData) => {
-      return await api.post(`/review/${id}`, reviewData); // [cite: 106]
+      return await api.post(`/review/${id}`, reviewData);
     },
     onSuccess: () => {
       toast.success('Review submitted successfully!');
@@ -41,45 +42,83 @@ export default function ComplaintDetail() {
       status: formData.get('status'),
       comment: formData.get('comment')
     });
+    e.target.reset(); // Clear the form after submission
   };
 
-  if (isLoading) return <div className="p-6"><SkeletonCard /></div>;
+  if (isLoading) return <div className="max-w-3xl mx-auto p-6"><SkeletonCard /></div>;
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">{complaint.title}</h1>
-          <span className="bg-slate-100 text-slate-800 px-4 py-2 rounded-lg font-medium">
+      
+      {/* Main White Panel */}
+      <div className="bg-white border border-slate-100 p-8 rounded-3xl shadow-lg">
+        
+        <div className="flex justify-between items-start mb-6 border-b border-slate-100 pb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 mb-2">{complaint.title}</h1>
+            <p className="text-slate-500 flex items-center gap-1 font-medium">
+              <MapPin size={16} className="text-blue-500"/> {complaint.location?.area}, {complaint.location?.city}
+            </p>
+          </div>
+          <span className={`px-4 py-2 text-sm font-bold rounded-full border ${
+            complaint.status === 'Pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+            complaint.status === 'Resolved' ? 'bg-green-50 text-green-700 border-green-200' :
+            complaint.status === 'Rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+            'bg-blue-50 text-blue-700 border-blue-200'
+          }`}>
             {complaint.status}
           </span>
         </div>
         
-        <p className="text-slate-600 mb-6 leading-relaxed">{complaint.description}</p>
+        <p className="text-slate-600 mb-8 leading-relaxed text-lg">{complaint.description}</p>
 
         {/* Image Gallery */}
         {complaint.images?.length > 0 && (
-          <div className="flex gap-4 mb-6 overflow-x-auto">
+          <div className="flex gap-4 mb-8 overflow-x-auto pb-4 custom-scrollbar">
             {complaint.images.map((img, idx) => (
-               <img key={idx} src={img} alt="Complaint" className="h-32 w-32 object-cover rounded-xl border" />
+               <img key={idx} src={img} alt="Complaint" className="h-40 w-40 object-cover rounded-2xl border border-slate-200 shadow-sm hover:scale-105 transition-transform" />
             ))}
           </div>
         )}
 
-        {/* Submitter Info Card */}
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 flex items-center justify-between">
-        <div>
-            <p className="text-sm text-slate-500">Filed by Citizen</p>
-            <p className="font-bold text-slate-800">@{complaint.userId._id}</p>
-        </div>
-         { console.log(complaint)}
-        <Link 
-           
-            to={`/profile/${complaint.userId?._id}`} 
-            className="text-sm font-semibold text-blue-600 bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg transition"
-        >
-            View Complainter
-        </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {/* Submitter Info Card (Restored the explicit "View Complainter" text) */}
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex items-center gap-4 hover:bg-slate-100 transition justify-between">
+                <div className="flex items-center gap-4">
+                  <img src={complaint.userId?.profilePhotoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} alt="Citizen" className="w-12 h-12 rounded-full object-cover border border-slate-300" />
+                  <div>
+                      {console.log(complaint)}
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Filed By</p>
+                      <p className="font-bold text-slate-800">@{complaint.userId?.fullName || complaint.userId?._id}</p>
+                  </div>
+                </div>
+                
+                <Link 
+                  to={`/profile/${complaint.userId?._id}`} 
+                  className="text-sm font-semibold text-blue-600 bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg transition flex items-center gap-2"
+                >
+                    <User size={16} /> View Complainter
+                </Link>
+            </div>
+
+            {/* Assigned Officer Card (New Feature) */}
+            {complaint.assignedOfficer ? (
+                <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex items-center gap-4">
+                    <img src={complaint.assignedOfficer.profilePhotoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} alt="Officer" className="w-12 h-12 rounded-full object-cover border-2 border-blue-300" />
+                    <div className="flex-1">
+                        <p className="text-xs text-blue-600 font-bold uppercase tracking-wider flex items-center gap-1">
+                            <ShieldCheck size={14} /> Official Assignee
+                        </p>
+                        <p className="font-bold text-slate-800">{complaint.assignedOfficer.fullName}</p>
+                        <p className="text-xs text-slate-500 truncate">{complaint.assignedOfficer.designation} • {complaint.assignedOfficer.departMent}</p>
+                    </div>
+                </div>
+            ) : (
+                <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-200 flex flex-col justify-center items-center text-center">
+                   <p className="text-yellow-700 font-bold text-sm mb-1">Pending AI Assignment</p>
+                   <p className="text-xs text-yellow-600/80">System is locating the best officer.</p>
+                </div>
+            )}
         </div>
 
         {/* Official Review History Timeline */}
