@@ -19,17 +19,26 @@ export const authMiddleware=(req,res,next)=>{
         return res.status(401).send("Authorization header missing");
      }
 
-     const verify=jwt.verify(token,JWT_SECRET);
-
-     if(!verify){
-        return res.status(401).send("Invalid token");
+     let verify;
+   
+     try {
+         verify = jwt.verify(token, JWT_SECRET); // Try Citizen first
+     } catch (err) {
+         try {
+             verify = jwt.verify(token, JWT_SECRET_OFFICER); // Try Officer second
+         } catch (err2) {
+             try {
+                 verify = jwt.verify(token, JWT_SECRET_ADMIN); // Try Admin last
+             } catch (err3) {
+                
+                 return res.status(401).send("Invalid token signature");
+             }
+         }
      }
 
-     const user=jwt.decode(token);
-
-     req.id=user.userId;
-
-     console.log("Token verified");
+     
+     req.id = verify.userId;
+     console.log("Token verified successfully");
 
      next();
 }

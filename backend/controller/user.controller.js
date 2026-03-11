@@ -8,11 +8,29 @@ import { ApiError } from "../utils/ApiError.js";
 import { z } from "zod";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
+import { Complaint } from "../model/complain.model.js";
 
 dotenv.config();
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+export const getUserProfile = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    
+    
+    const user = await User.findById(id).select("-password");
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+   
+    const complaints = await Complaint.find({ userId: id }).sort({ createdAt: -1 });
+
+    res.status(200).json(
+        new ApiResponse(200, { user, complaints }, "User profile and history fetched successfully")
+    );
+});
 
 export const signup = asyncHandler( async (req,res)=>{
      const { username,fullName,address,email, password,gender,phoneNumber,role,designation,departMent,profilePhoto } = req.body;

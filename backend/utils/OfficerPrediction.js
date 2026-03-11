@@ -78,6 +78,11 @@ export const predictOfficer = async (complaint) => {
             isVerified: true,
         });
 
+        if (!officers || officers.length === 0) {
+            console.log("No verified officers available for assignment.");
+            return null;
+        }
+
         const userPrompt = `New complaint:
         Title: ${complaint.title}
         Description: ${complaint.description}
@@ -113,7 +118,8 @@ export const predictOfficer = async (complaint) => {
                 headers: {
                     Authorization: `Bearer ${HUGGINGFACE_API_TOKEN}`,
                     "Content-Type": "application/json"
-                }
+                },
+                timeout:10000
             }
         );
 
