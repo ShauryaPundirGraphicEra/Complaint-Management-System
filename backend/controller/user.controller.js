@@ -65,10 +65,21 @@ export const signup = asyncHandler( async (req,res)=>{
     
    
    
-    const existingUser= await User.findOne({ $or: [{userName:username},{email:email}]});
-    if(existingUser){
-        
-        throw new ApiError(400, "Username or email already exists !!");
+    const existingUser = await User.findOne({ 
+    $or: [{ userName: username }, { email: email }, { phoneNumber: phoneNumber }]
+    });
+
+    if (existingUser) {
+        if (existingUser.userName === username) {
+            throw new ApiError(400, "Username already exists !!");
+        }
+        if (existingUser.email === email) {
+            throw new ApiError(400, "Email already exists !!");
+        }
+        if (existingUser.phoneNumber === phoneNumber) {
+            throw new ApiError(400, "Phone number already exists !!");
+        }
+        throw new ApiError(400, "User details already exist !!");
     }
     
 
@@ -116,7 +127,7 @@ export const signup = asyncHandler( async (req,res)=>{
 });
 
 
-export const signin = async (req,res)=>{
+export const signin =asyncHandler( async (req,res)=>{
      const { userName,password}=req.body;
 
      const inputSchema=z.object({
@@ -159,4 +170,4 @@ export const signin = async (req,res)=>{
 
      res.status(200).json(new ApiResponse(200,{token,user},"Login successfull !!"));
 
-}
+});

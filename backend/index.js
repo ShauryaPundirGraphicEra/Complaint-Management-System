@@ -29,18 +29,18 @@ export const limiter = rateLimit({
 
 
 
-app.use((err, req, res, next) => {
+// app.use((err, req, res, next) => {
 
-    const statusCode = err.statusCode || 500;
+//     const statusCode = err.statusCode || 500;
 
-    res.status(statusCode).json({
-        success: false,
-        message: err.message || "Internal Server Error",
-        errors: err.errors || [],
-        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
-    });
+//     res.status(statusCode).json({
+//         success: false,
+//         message: err.message || "Internal Server Error",
+//         errors: err.errors || [],
+//         stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+//     });
 
-});
+// });
 
 
 app.use("/api/v1/users",userRoutes);
@@ -81,6 +81,17 @@ app.use("/api/v1/",postRoutes);
 
 app.get("/", (req,res)=>{
   res.send("API running");
+});
+
+
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        success: false,
+        message: err.message || "Internal Server Error",
+        errors: err.errors || [],
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+    });
 });
 
 app.listen(process.env.PORT || 3000,()=>{

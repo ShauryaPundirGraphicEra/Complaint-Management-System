@@ -1,16 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link,useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/axiosInstance';
 import SkeletonCard from '../components/SkeletonCard';
 import { ShieldCheck, User, MapPin } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function ComplaintDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
   
   // Assuming you save the logged-in user's role in localStorage on signin
   const userRole = localStorage.getItem('role') || 'Citizen'; 
+  useEffect(() => {
+    if (!token) {
+      navigate('/signin');
+    }
+  }, [token, navigate]);
 
   const { data: complaint, isLoading } = useQuery({
     queryKey: ['complaint', id],

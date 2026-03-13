@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {  useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axiosInstance';
@@ -10,6 +11,8 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const userId = localStorage.getItem('userId');
   const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
   
   // Ref to track previous data for our notification logic
   const prevComplaintsRef = useRef();
@@ -61,6 +64,13 @@ export default function Dashboard() {
   const handleSupport = (e, complaintId) => {
     e.preventDefault(); // Prevents the card's <Link> from navigating to the detail page
     e.stopPropagation();
+
+    if (!token) {
+      toast.error('Please sign in to support this complaint.');
+      navigate('/signin');
+      return;
+    }
+
     supportMutation.mutate(complaintId);
   };
 
@@ -77,6 +87,15 @@ export default function Dashboard() {
   const displayedComplaints = role === 'Officer' 
     ? complaints?.filter(c => c.assignedOfficer === userId) 
     : complaints;
+
+  const handleCardClick = (complaintId) => {
+    if (!token) {
+      toast.error('Please sign in to view complaint details.');
+      navigate('/signin');
+    } else {
+      navigate(`/complaint/${complaintId}`);
+    }
+  };
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen">
@@ -102,7 +121,7 @@ export default function Dashboard() {
             const hasSupported = complaint.supportVotes.includes(userId);
 
             return (
-              <Link to={`/complaint/${complaint._id}`} key={complaint._id} className="block">
+              <div key={complaint._id} onClick={() => handleCardClick(complaint._id)} className="block">
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all mb-4 cursor-pointer relative group">
                   <div className="flex justify-between items-start">
                     <div>
@@ -143,7 +162,7 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </div>
-              </Link>
+              </div>
             )
           })
         )}
