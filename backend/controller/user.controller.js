@@ -147,7 +147,7 @@ export const signin =asyncHandler( async (req,res)=>{
      const user=await User.findOne({ userName:userName});
 
      if(!user){
-        throw new ApiError(400,"Invalid username or password");
+        throw new ApiError(400,"User not found with the provided username");
      }
 
      if(!await bcrypt.compare(password,user.password)){
