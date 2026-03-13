@@ -9,6 +9,7 @@ import { z } from "zod";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { Complaint } from "../model/complain.model.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 dotenv.config();
 
@@ -118,6 +119,24 @@ export const signup = asyncHandler( async (req,res)=>{
     });
 
     console.log("User created successfully");
+
+    if (newUser.role === "Officer") {
+        const adminEmail = process.env.ADMIN_EMAIL; 
+        const message = `
+            <h2>New Officer Registration Pending Verification</h2>
+            <p>A new user has registered as a Government Officer and requires manual verification.</p>
+            <ul>
+                <li><strong>Name:</strong> ${fullName}</li>
+                <li><strong>Email:</strong> ${email}</li>
+                <li><strong>Department:</strong> ${departMent}</li>
+                <li><strong>Designation:</strong> ${designation}</li>
+            </ul>
+            <p>Please log in to your MongoDB database, locate this user (ID: <code>${newUser._id}</code>), and set <code>isVerified: true</code> to grant them portal access.</p>
+            <a href="https://complaint-management-system-smoky.vercel.app/">Visit the Portal GovResolve</a>
+        `;
+        
+               sendEmail({ email: adminEmail, subject: "Action Required: Verify New Officer", message });
+    }
 
     // res.status(201).json({
     //     message:"User created",
