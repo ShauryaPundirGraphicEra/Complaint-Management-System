@@ -232,7 +232,7 @@ export const reviewComplaint = asyncHandler(async (req,res)=>{
     if (complaint.userId && user.email) {
         const message = `
             <h3>Update on Your Complaint</h3>
-            <p>Dear ${complaint.userId.fullName},</p>
+            <p>Dear ${user.fullName},</p>
             <p>An official has updated the status of your complaint: "<strong>${complaint.title}</strong>"</p>
             <p><strong>New Status:</strong> <span style="color: blue;">${status}</span></p>
             <p><strong>Official Remarks:</strong> <em>"${comment}"</em></p>
