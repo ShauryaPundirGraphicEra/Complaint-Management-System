@@ -7,7 +7,7 @@
 ![AI](https://img.shields.io/badge/AI-HuggingFace_Qwen2.5-orange)
 ![Tailwind](https://img.shields.io/badge/Styling-Tailwind_CSS-38B2AC)
 
-**GovResolve** is a modern, full-stack civic technology platform designed to streamline communication between citizens and government departments. [cite_start]By integrating an **AI-powered LLM routing engine**, the system completely automates the triage and assignment of civic complaints, eliminating bureaucratic delays and ensuring accountability[cite: 129, 133].
+**GovResolve** is a modern, full-stack civic technology platform designed to streamline communication between citizens and government departments. By integrating an **AI-powered LLM routing engine**, the system completely automates the triage and assignment of civic complaints, eliminating bureaucratic delays and ensuring accountability[cite: 129, 133].
 
 ---
 
